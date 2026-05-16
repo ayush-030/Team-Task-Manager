@@ -31,24 +31,26 @@ import { useAllProjectTasks } from "../api/hooks/useTasks.js";
 import StatCard from "../components/ui/StatCard.jsx";
 import { CardSkeleton } from "../components/ui/Skeleton.jsx";
 import EmptyState from "../components/ui/EmptyState.jsx";
-import { completionPct, isOverdue, statusLabels } from "../utils/formatters.js";
+import { isOverdue, statusLabels } from "../utils/formatters.js";
 
 const colors = ["#64748b", "#f59e0b", "#0ea5e9", "#ef4444", "#10b981"];
-const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-function trendData(tasks) {
-  return days.map((day, index) => ({
-    day,
-    completed: Math.max(1, tasks.filter((task) => task.status === "done").length - (6 - index)),
-    activity: Math.max(2, Math.round(tasks.length / 2) + index + (index % 2 ? 3 : 0)),
-  }));
-}
 
 export default function Dashboard() {
   const { data, isLoading } = useDashboard();
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
   const { tasks, isLoading: tasksLoading } = useAllProjectTasks(projects);
-  const stats = data || { total_tasks: 0, completed_pct: 0, overdue_count: 0, blocked_count: 0, review_count: 0, checklist_completion_pct: 0, by_status: { todo: 0, in_progress: 0, review: 0, blocked: 0, done: 0 } };
+  const stats = data || {
+    total_tasks: 0,
+    completed_pct: 0,
+    overdue_count: 0,
+    blocked_count: 0,
+    review_count: 0,
+    checklist_completion_pct: 0,
+    by_status: { todo: 0, in_progress: 0, review: 0, blocked: 0, done: 0 },
+    completed_over_time: [],
+    weekly_productivity: [],
+    project_progress: [],
+  };
   const pending = (stats.by_status.todo || 0) + (stats.by_status.in_progress || 0) + (stats.by_status.review || 0) + (stats.by_status.blocked || 0);
   const uniqueMembers = new Set(projects.flatMap((project) => project.member_ids || [])).size;
   const completed = stats.by_status.done || 0;
@@ -57,10 +59,9 @@ export default function Dashboard() {
     .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
     .slice(0, 5);
   const statusData = Object.entries(stats.by_status).map(([name, value]) => ({ name: statusLabels[name] || name, value }));
-  const projectProgress = projects.slice(0, 6).map((project) => {
-    const projectTasks = tasks.filter((task) => task.project_id === project.id);
-    return { name: project.name, progress: completionPct(projectTasks), tasks: projectTasks.length };
-  });
+  const completedOverTime = stats.completed_over_time || [];
+  const hasCompletedOverTime = completedOverTime.some((point) => point.completed > 0);
+  const projectProgress = stats.project_progress || [];
   const loading = isLoading || projectsLoading || tasksLoading;
 
   if (loading) {
@@ -98,22 +99,23 @@ export default function Dashboard() {
             <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-black text-indigo-700">Live analytics</span>
           </div>
           <div className="mt-5 h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData(tasks)}>
-                <defs>
-                  <linearGradient id="completedFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="day" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e2e8f0" }} />
-                <Area type="monotone" dataKey="completed" stroke="#6366f1" strokeWidth={3} fill="url(#completedFill)" />
-                <Area type="monotone" dataKey="activity" stroke="#14b8a6" strokeWidth={3} fill="transparent" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {hasCompletedOverTime ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={completedOverTime}>
+                  <defs>
+                    <linearGradient id="completedFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="label" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
+                  <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e2e8f0" }} />
+                  <Area type="monotone" dataKey="completed" stroke="#6366f1" strokeWidth={3} fill="url(#completedFill)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : <EmptyState title="No completed tasks yet" description="Tasks moved to Done will appear in this chart by completion day." />}
           </div>
         </motion.article>
 

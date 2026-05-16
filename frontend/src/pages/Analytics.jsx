@@ -1,20 +1,18 @@
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { useProjects } from "../api/hooks/useProjects.js";
-import { useAllProjectTasks } from "../api/hooks/useTasks.js";
-import { completionPct } from "../utils/formatters.js";
+import { useDashboard } from "../api/hooks/useDashboard.js";
+import EmptyState from "../components/ui/EmptyState.jsx";
+import { CardSkeleton } from "../components/ui/Skeleton.jsx";
 
 export default function Analytics() {
-  const { data: projects = [] } = useProjects();
-  const { tasks } = useAllProjectTasks(projects);
-  const projectData = projects.map((project) => {
-    const projectTasks = tasks.filter((task) => task.project_id === project.id);
-    return { name: project.name, progress: completionPct(projectTasks), tasks: projectTasks.length };
-  });
-  const trend = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, index) => ({
-    day,
-    productivity: Math.min(100, 48 + index * 7 + (tasks.length % 9)),
-    completed: tasks.filter((task) => task.status === "done").length + index,
-  }));
+  const { data, isLoading } = useDashboard();
+  const weeklyProductivity = data?.weekly_productivity || [];
+  const projectData = data?.project_progress || [];
+  const hasProductivity = weeklyProductivity.some((point) => point.assigned_tasks > 0 || point.completed_tasks > 0);
+  const hasProjectProgress = projectData.some((project) => project.tasks > 0);
+
+  if (isLoading) {
+    return <div className="grid gap-5 xl:grid-cols-2"><CardSkeleton /><CardSkeleton /></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -26,30 +24,34 @@ export default function Analytics() {
         <article className="premium-card rounded-3xl p-5">
           <h3 className="text-xl font-black">Weekly productivity</h3>
           <div className="mt-5 h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="day" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e2e8f0" }} />
-                <Line type="monotone" dataKey="productivity" stroke="#6366f1" strokeWidth={3} dot={false} />
-                <Line type="monotone" dataKey="completed" stroke="#10b981" strokeWidth={3} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+            {hasProductivity ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklyProductivity}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="label" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e2e8f0" }} />
+                  <Line type="monotone" dataKey="productivity" stroke="#6366f1" strokeWidth={3} dot={false} />
+                  <Line type="monotone" dataKey="completed_tasks" stroke="#10b981" strokeWidth={3} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : <EmptyState title="No productivity data yet" description="Assign tasks and complete them to populate weekly productivity." />}
           </div>
         </article>
         <article className="premium-card rounded-3xl p-5">
           <h3 className="text-xl font-black">Project progress</h3>
           <div className="mt-5 h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={projectData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e2e8f0" }} />
-                <Bar dataKey="progress" fill="#6366f1" radius={[12, 12, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {hasProjectProgress ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={projectData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e2e8f0" }} />
+                  <Bar dataKey="progress" fill="#6366f1" radius={[12, 12, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : <EmptyState title="No project progress yet" description="Create tasks in projects to see real progress metrics." />}
           </div>
         </article>
       </section>
