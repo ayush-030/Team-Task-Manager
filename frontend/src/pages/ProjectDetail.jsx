@@ -10,6 +10,7 @@ import Modal from "../components/Modal.jsx";
 import AvatarStack from "../components/ui/AvatarStack.jsx";
 import StatCard from "../components/ui/StatCard.jsx";
 import { completionPct } from "../utils/formatters.js";
+import { isProjectAdmin, projectMemberIds } from "../utils/permissions.js";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -21,7 +22,9 @@ export default function ProjectDetail() {
   const addMember = useAddMember(id);
   const [taskOpen, setTaskOpen] = useState(false);
   const [memberEmail, setMemberEmail] = useState("");
+  const [memberRole, setMemberRole] = useState("member");
   const [taskForm, setTaskForm] = useState({ title: "", description: "", priority: "medium", due_date: "" });
+  const canManageProject = isProjectAdmin(project, user);
 
   const submitTask = async (e) => {
     e.preventDefault();
@@ -33,9 +36,10 @@ export default function ProjectDetail() {
 
   const submitMember = async (e) => {
     e.preventDefault();
-    await addMember.mutateAsync(memberEmail);
+    await addMember.mutateAsync({ email: memberEmail, role: memberRole });
     toast.success("Member added to project");
     setMemberEmail("");
+    setMemberRole("member");
   };
 
   const changeStatus = async (taskId, status) => {
@@ -52,7 +56,7 @@ export default function ProjectDetail() {
     }
   };
 
-  const members = (project?.member_ids || []).map((_, index) => `Member ${index + 1}`);
+  const members = projectMemberIds(project).map((_, index) => `Member ${index + 1}`);
   const done = tasks.filter((task) => task.status === "done").length;
 
   return (
@@ -66,7 +70,7 @@ export default function ProjectDetail() {
           </div>
           <div className="flex flex-wrap gap-3">
             <AvatarStack members={members.length ? members : ["Owner"]} />
-            {user?.role === "admin" && <button className="btn-primary bg-white text-slate-950" onClick={() => setTaskOpen(true)}><Plus size={18} /> Add Task</button>}
+            {canManageProject && <button className="btn-primary bg-white text-slate-950" onClick={() => setTaskOpen(true)}><Plus size={18} /> Add Task</button>}
           </div>
         </div>
       </section>
@@ -75,10 +79,10 @@ export default function ProjectDetail() {
         <StatCard label="Progress" value={`${completionPct(tasks)}%`} helper={`${done} of ${tasks.length} tasks complete`} />
         <StatCard label="Open Tasks" value={tasks.length - done} helper="Todo, active, review, or blocked work" />
         <StatCard label="Blocked" value={tasks.filter((task) => task.status === "blocked").length} helper="Tasks waiting on help" />
-        <StatCard label="Members" value={project?.member_ids?.length || 0} helper="Project collaborators" />
+        <StatCard label="Members" value={projectMemberIds(project).length} helper="Project collaborators" />
       </section>
 
-      {user?.role === "admin" && (
+      {canManageProject && (
         <aside className="premium-card rounded-3xl p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -87,6 +91,10 @@ export default function ProjectDetail() {
             </div>
             <form className="flex w-full gap-3 sm:w-auto" onSubmit={submitMember}>
               <input className="input min-w-0 sm:w-72" type="email" placeholder="member@example.com" value={memberEmail} onChange={(e) => setMemberEmail(e.target.value)} required />
+              <select className="input w-36" value={memberRole} onChange={(e) => setMemberRole(e.target.value)}>
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
               <button className="btn-secondary" disabled={addMember.isPending}><UserPlus size={18} /> Add</button>
             </form>
           </div>

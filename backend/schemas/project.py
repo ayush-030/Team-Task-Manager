@@ -1,7 +1,15 @@
 from datetime import datetime
+from typing import Literal
 
 from beanie import PydanticObjectId
 from pydantic import BaseModel, ConfigDict, Field
+
+
+class ProjectMemberOut(BaseModel):
+    user_id: PydanticObjectId
+    role: Literal["admin", "member"]
+
+    model_config = ConfigDict(from_attributes=True, json_encoders={PydanticObjectId: str})
 
 
 class ProjectCreate(BaseModel):
@@ -20,6 +28,7 @@ class ProjectOut(BaseModel):
     description: str
     owner_id: PydanticObjectId
     member_ids: list[PydanticObjectId]
+    members: list[ProjectMemberOut] = Field(default_factory=list)
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True, json_encoders={PydanticObjectId: str})
@@ -27,3 +36,4 @@ class ProjectOut(BaseModel):
 
 class AddMemberRequest(BaseModel):
     email: str
+    role: Literal["admin", "member"] = "member"

@@ -32,6 +32,7 @@ import StatCard from "../components/ui/StatCard.jsx";
 import { CardSkeleton } from "../components/ui/Skeleton.jsx";
 import EmptyState from "../components/ui/EmptyState.jsx";
 import { isOverdue, statusLabels } from "../utils/formatters.js";
+import { projectMemberIds } from "../utils/permissions.js";
 
 const colors = ["#64748b", "#f59e0b", "#0ea5e9", "#ef4444", "#10b981"];
 
@@ -52,7 +53,7 @@ export default function Dashboard() {
     project_progress: [],
   };
   const pending = (stats.by_status.todo || 0) + (stats.by_status.in_progress || 0) + (stats.by_status.review || 0) + (stats.by_status.blocked || 0);
-  const uniqueMembers = new Set(projects.flatMap((project) => project.member_ids || [])).size;
+  const uniqueMembers = new Set(projects.flatMap((project) => projectMemberIds(project))).size;
   const completed = stats.by_status.done || 0;
   const upcoming = tasks
     .filter((task) => task.due_date && task.status !== "done")

@@ -3,13 +3,14 @@ import { useMemo, useState } from "react";
 import { useProjects } from "../api/hooks/useProjects.js";
 import { useAllProjectTasks } from "../api/hooks/useTasks.js";
 import { initials } from "../utils/formatters.js";
+import { projectMemberIds } from "../utils/permissions.js";
 
 export default function Team() {
   const [query, setQuery] = useState("");
   const { data: projects = [] } = useProjects();
   const { tasks } = useAllProjectTasks(projects);
   const members = useMemo(() => {
-    const ids = [...new Set(projects.flatMap((project) => project.member_ids || []))];
+    const ids = [...new Set(projects.flatMap((project) => projectMemberIds(project)))];
     return ids.map((id, index) => {
       const assigned = tasks.filter((task) => task.assigned_to === id);
       const completed = assigned.filter((task) => task.status === "done").length;

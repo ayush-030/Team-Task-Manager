@@ -35,9 +35,9 @@ export default function Signup() {
     <main className="grid min-h-screen bg-slate-950 text-white lg:grid-cols-[0.95fr_1.05fr]">
       <section className="grid place-items-center px-5 py-10">
         <motion.form initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl md:p-8" onSubmit={submit}>
-          <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm font-black text-indigo-600">← Back to site</Link>
+          <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm font-black text-indigo-600">Back to site</Link>
           <h2 className="text-3xl font-black tracking-tight">Create your account</h2>
-          <p className="mt-2 text-sm font-semibold text-slate-500">New signups join as members. Admins can be created with the seed script.</p>
+          <p className="mt-2 text-sm font-semibold text-slate-500">New signups join as users. Create a project to become its project admin.</p>
           <div className="mt-8 space-y-4">
             <label className="field-label">Email
               <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} /><input className="input pl-10" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>

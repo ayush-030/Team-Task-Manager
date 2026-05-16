@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight, CalendarDays } from "lucide-react";
 import AvatarStack from "./ui/AvatarStack.jsx";
+import { projectMemberIds } from "../utils/permissions.js";
 
 export default function ProjectCard({ project, tasks = [] }) {
   const done = tasks.filter((task) => task.status === "done").length;
   const progress = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
-  const members = (project.member_ids || []).map((id, index) => `Member ${index + 1}`);
+  const members = projectMemberIds(project).map((id, index) => `Member ${index + 1}`);
 
   return (
     <motion.article whileHover={{ y: -6 }} className="group premium-card rounded-3xl p-5">

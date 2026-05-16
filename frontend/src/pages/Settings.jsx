@@ -19,7 +19,7 @@ export default function Settings() {
         <h3 className="flex items-center gap-2 text-xl font-black"><UserRound size={20} /> Profile settings</h3>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <label className="field-label">Username<input className="input" defaultValue={user?.username} /></label>
-          <label className="field-label">Role<input className="input capitalize" disabled defaultValue={user?.role} /></label>
+          <label className="field-label">Role<input className="input capitalize" disabled defaultValue={user?.role?.replace("_", " ")} /></label>
           <label className="field-label md:col-span-2">Email<input className="input" disabled defaultValue={user?.email} /></label>
         </div>
         <button className="btn-primary mt-5" onClick={() => toast.success("Profile preferences saved")}>Save profile</button>

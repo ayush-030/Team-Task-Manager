@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "../context/AuthContext.jsx";
 import { useCreateProject, useProjects } from "../api/hooks/useProjects.js";
 import { useAllProjectTasks } from "../api/hooks/useTasks.js";
 import ProjectCard from "../components/ProjectCard.jsx";
@@ -10,7 +9,6 @@ import EmptyState from "../components/ui/EmptyState.jsx";
 import { CardSkeleton } from "../components/ui/Skeleton.jsx";
 
 export default function Projects() {
-  const { user } = useAuth();
   const { data = [], isLoading } = useProjects();
   const { tasks } = useAllProjectTasks(data);
   const createProject = useCreateProject();
@@ -33,7 +31,7 @@ export default function Projects() {
           <h2 className="mt-2 text-3xl font-black tracking-tight">Projects that show their pulse.</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Track progress, members, task volume, and status across every workspace you can access.</p>
         </div>
-        {user?.role === "admin" && <button className="btn-primary bg-white text-slate-950" onClick={() => setOpen(true)}><Plus size={18} /> New Project</button>}
+        <button className="btn-primary bg-white text-slate-950" onClick={() => setOpen(true)}><Plus size={18} /> New Project</button>
       </section>
 
       {isLoading ? (
@@ -43,7 +41,7 @@ export default function Projects() {
           {data.map((project) => <ProjectCard key={project.id} project={project} tasks={tasks.filter((task) => task.project_id === project.id)} />)}
         </section>
       ) : (
-        <EmptyState title="No projects yet" description="Admins can create the first project and invite members to collaborate." action={user?.role === "admin" && <button className="btn-primary" onClick={() => setOpen(true)}>Create project</button>} />
+        <EmptyState title="No projects yet" description="Create the first project and invite members to collaborate." action={<button className="btn-primary" onClick={() => setOpen(true)}>Create project</button>} />
       )}
 
       <Modal title="New project" open={open} onClose={() => setOpen(false)}>

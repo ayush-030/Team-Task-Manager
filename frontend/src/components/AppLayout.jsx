@@ -71,7 +71,7 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
             {!collapsed && (
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-black text-slate-950">{user?.username}</p>
-                <p className="text-xs font-bold capitalize text-slate-500">{user?.role}</p>
+                <p className="text-xs font-bold capitalize text-slate-500">{user?.role?.replace("_", " ")}</p>
               </div>
             )}
           </div>

@@ -5,7 +5,11 @@ export const useProjects = () =>
   useQuery({ queryKey: ["projects"], queryFn: async () => (await api.get("/api/projects")).data });
 
 export const useProject = (id) =>
-  useQuery({ queryKey: ["projects", id], queryFn: async () => (await api.get(`/api/projects/${id}`)).data });
+  useQuery({
+    queryKey: ["projects", id],
+    queryFn: async () => (await api.get(`/api/projects/${id}`)).data,
+    enabled: Boolean(id),
+  });
 
 export const useCreateProject = () => {
   const qc = useQueryClient();
@@ -18,7 +22,10 @@ export const useCreateProject = () => {
 export const useAddMember = (projectId) => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (email) => api.post(`/api/projects/${projectId}/members`, { email }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["projects", projectId] }),
+    mutationFn: ({ email, role = "member" }) => api.post(`/api/projects/${projectId}/members`, { email, role }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["projects", projectId] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    },
   });
 };

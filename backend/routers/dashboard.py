@@ -35,11 +35,17 @@ def as_aware(value: datetime) -> datetime:
 
 @router.get("", response_model=DashboardOut)
 async def dashboard(current_user: User = Depends(get_current_user)) -> DashboardOut:
-    if current_user.role == "admin":
+    if current_user.role == "super_admin":
         projects = await Project.find_all().to_list()
     else:
         projects = await Project.find(
-            {"$or": [{"owner_id": current_user.id}, {"member_ids": current_user.id}]}
+            {
+                "$or": [
+                    {"owner_id": current_user.id},
+                    {"member_ids": current_user.id},
+                    {"members.user_id": current_user.id},
+                ]
+            }
         ).to_list()
     project_ids = [project.id for project in projects]
     by_status = {"todo": 0, "in_progress": 0, "review": 0, "blocked": 0, "done": 0}

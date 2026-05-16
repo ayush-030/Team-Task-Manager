@@ -25,7 +25,7 @@ async def signup(payload: UserCreate) -> User:
         email=payload.email,
         username=payload.username,
         hashed_password=get_password_hash(payload.password),
-        role="member",
+        role="user",
     )
     await user.insert()
     return user

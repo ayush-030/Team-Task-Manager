@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Literal
 
 from beanie import PydanticObjectId
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserCreate(BaseModel):
@@ -15,8 +15,17 @@ class UserOut(BaseModel):
     id: PydanticObjectId
     email: EmailStr
     username: str
-    role: Literal["admin", "member"]
+    role: Literal["super_admin", "user"]
     created_at: datetime
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def migrate_legacy_roles(cls, value: str) -> str:
+        if value == "admin":
+            return "super_admin"
+        if value == "member":
+            return "user"
+        return value
 
     model_config = ConfigDict(from_attributes=True, json_encoders={PydanticObjectId: str})
 

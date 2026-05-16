@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import api from "../api/axios.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useProject } from "../api/hooks/useProjects.js";
 import {
   useAddChecklistItem,
   useAddProgressNote,
@@ -36,6 +37,7 @@ import CommentSection from "../components/CommentSection.jsx";
 import EmptyState from "../components/ui/EmptyState.jsx";
 import { Skeleton } from "../components/ui/Skeleton.jsx";
 import { checklistPct, initials, priorityStyles, statusLabels, statusStyles } from "../utils/formatters.js";
+import { isProjectAdmin } from "../utils/permissions.js";
 import { relativeTime } from "../utils/relativeTime.js";
 
 const statusOptions = ["todo", "in_progress", "review", "blocked", "done"];
@@ -211,6 +213,7 @@ export default function TaskDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: task, isLoading } = useTask(id);
+  const { data: project } = useProject(task?.project_id);
   const updateTask = useUpdateTask();
   const [form, setForm] = useState({ title: "", description: "", status: "todo", priority: "medium", due_date: "", blocked_reason: "" });
 
@@ -219,7 +222,7 @@ export default function TaskDetail() {
   }, [task]);
 
   const StatusIcon = statusIcons[form.status] || Circle;
-  const canEditAdminFields = user?.role === "admin";
+  const canEditAdminFields = isProjectAdmin(project, user);
   const taskEvents = useMemo(() => task?.activity || [], [task]);
 
   const submit = async (e) => {

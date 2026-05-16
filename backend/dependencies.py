@@ -33,19 +33,56 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     return user
 
 
-async def require_admin(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.role != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+async def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "super_admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required")
     return current_user
 
 
+async def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    return await require_super_admin(current_user)
+
+
+def is_super_admin(user: User) -> bool:
+    return user.role == "super_admin"
+
+
+def project_member_ids(project: Project) -> set[PydanticObjectId]:
+    ids = set(project.member_ids or [])
+    ids.add(project.owner_id)
+    for member in project.members or []:
+        ids.add(member.user_id)
+    return ids
+
+
+def get_project_role(project: Project, user: User) -> str | None:
+    if is_super_admin(user):
+        return "super_admin"
+    if project.owner_id == user.id:
+        return "admin"
+    for member in project.members or []:
+        if member.user_id == user.id:
+            return member.role
+    if user.id in (project.member_ids or []):
+        return "member"
+    return None
+
+
 def is_project_member(project: Project, user: User) -> bool:
-    user_id = user.id
-    return user.role == "admin" or project.owner_id == user_id or user_id in project.member_ids
+    return is_super_admin(user) or get_project_role(project, user) is not None
 
 
 def is_project_owner_or_admin(project: Project, user: User) -> bool:
-    return user.role == "admin" or project.owner_id == user.id
+    return is_super_admin(user) or get_project_role(project, user) == "admin"
+
+
+def is_project_admin(project: Project, user: User) -> bool:
+    return is_project_owner_or_admin(project, user)
+
+
+def require_project_admin(project: Project, user: User) -> None:
+    if not is_project_admin(project, user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Project admin access required")
 
 
 async def get_project_or_404(project_id: PydanticObjectId) -> Project:
