@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock3,
+  Eye,
   FolderKanban,
   Plus,
   Target,
@@ -32,7 +33,7 @@ import { CardSkeleton } from "../components/ui/Skeleton.jsx";
 import EmptyState from "../components/ui/EmptyState.jsx";
 import { completionPct, isOverdue, statusLabels } from "../utils/formatters.js";
 
-const colors = ["#6366f1", "#f59e0b", "#10b981"];
+const colors = ["#64748b", "#f59e0b", "#0ea5e9", "#ef4444", "#10b981"];
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function trendData(tasks) {
@@ -47,8 +48,8 @@ export default function Dashboard() {
   const { data, isLoading } = useDashboard();
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
   const { tasks, isLoading: tasksLoading } = useAllProjectTasks(projects);
-  const stats = data || { total_tasks: 0, completed_pct: 0, overdue_count: 0, by_status: { todo: 0, in_progress: 0, done: 0 } };
-  const pending = (stats.by_status.todo || 0) + (stats.by_status.in_progress || 0);
+  const stats = data || { total_tasks: 0, completed_pct: 0, overdue_count: 0, blocked_count: 0, review_count: 0, checklist_completion_pct: 0, by_status: { todo: 0, in_progress: 0, review: 0, blocked: 0, done: 0 } };
+  const pending = (stats.by_status.todo || 0) + (stats.by_status.in_progress || 0) + (stats.by_status.review || 0) + (stats.by_status.blocked || 0);
   const uniqueMembers = new Set(projects.flatMap((project) => project.member_ids || [])).size;
   const completed = stats.by_status.done || 0;
   const upcoming = tasks
@@ -72,11 +73,17 @@ export default function Dashboard() {
         <StatCard label="Total Projects" value={projects.length} icon={FolderKanban} tone="indigo" helper="Active workspaces you can access" />
         <StatCard label="Total Tasks" value={stats.total_tasks} icon={Target} tone="sky" helper={`${completed} completed tasks`} />
         <StatCard label="Pending Tasks" value={pending} icon={Clock3} tone="amber" helper="Todo and in-progress work" />
+        <StatCard label="Blocked Tasks" value={stats.blocked_count || 0} icon={AlertTriangle} tone="rose" helper="Waiting on a dependency" />
+      </section>
+
+      <section className="grid gap-5 md:grid-cols-4">
+        <StatCard label="Completed" value={`${stats.completed_pct}%`} icon={CheckCircle2} tone="emerald" helper="Completion rate across visible projects" />
+        <StatCard label="In Review" value={stats.review_count || 0} icon={Eye} tone="sky" helper="Ready for testing or approval" />
+        <StatCard label="Checklist Done" value={`${stats.checklist_completion_pct || 0}%`} icon={CheckCircle2} tone="emerald" helper="Subtask completion rate" />
         <StatCard label="Overdue Tasks" value={stats.overdue_count} icon={AlertTriangle} tone="rose" helper="Needs attention today" />
       </section>
 
-      <section className="grid gap-5 md:grid-cols-3">
-        <StatCard label="Completed" value={`${stats.completed_pct}%`} icon={CheckCircle2} tone="emerald" helper="Completion rate across visible projects" />
+      <section className="grid gap-5 md:grid-cols-2">
         <StatCard label="Total Members" value={uniqueMembers} icon={Users} tone="indigo" helper="Unique project member IDs" />
         <StatCard label="Active Users" value={Math.max(uniqueMembers, projects.length ? 1 : 0)} icon={Activity} tone="sky" helper="Estimated from active project membership" />
       </section>

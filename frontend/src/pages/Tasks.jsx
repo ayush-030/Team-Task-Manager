@@ -35,6 +35,8 @@ export default function Tasks() {
               <option value="all">All statuses</option>
               <option value="todo">To do</option>
               <option value="in_progress">In progress</option>
+              <option value="review">Review</option>
+              <option value="blocked">Blocked</option>
               <option value="done">Done</option>
             </select>
           </div>

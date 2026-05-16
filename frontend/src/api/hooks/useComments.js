@@ -11,7 +11,10 @@ export const usePostComment = (taskId) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body) => api.post(`/api/tasks/${taskId}/comments`, { body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks", taskId, "comments"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", taskId, "comments"] });
+      qc.invalidateQueries({ queryKey: ["tasks", taskId] });
+    },
   });
 };
 

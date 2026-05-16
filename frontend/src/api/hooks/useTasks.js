@@ -45,3 +45,63 @@ export const useUpdateTask = () => {
     },
   });
 };
+
+export const useAddProgressNote = (taskId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (content) => api.post(`/api/tasks/${taskId}/progress-notes`, { content }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", taskId] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+};
+
+export const useUpdateProgressNote = (taskId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ noteId, content }) => api.put(`/api/tasks/${taskId}/progress-notes/${noteId}`, { content }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks", taskId] }),
+  });
+};
+
+export const useDeleteProgressNote = (taskId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (noteId) => api.delete(`/api/tasks/${taskId}/progress-notes/${noteId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks", taskId] }),
+  });
+};
+
+export const useAddChecklistItem = (taskId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (text) => api.post(`/api/tasks/${taskId}/checklist`, { text }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", taskId] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+};
+
+export const useUpdateChecklistItem = (taskId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ itemId, payload }) => api.put(`/api/tasks/${taskId}/checklist/${itemId}`, payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", taskId] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+};
+
+export const useDeleteChecklistItem = (taskId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (itemId) => api.delete(`/api/tasks/${taskId}/checklist/${itemId}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks", taskId] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+};

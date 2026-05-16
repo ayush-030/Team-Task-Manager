@@ -41,7 +41,13 @@ export default function ProjectDetail() {
   const changeStatus = async (taskId, status) => {
     const task = tasks.find((item) => item.id === taskId);
     if (task && task.status !== status) {
-      await updateTask.mutateAsync({ id: taskId, payload: { status } });
+      const payload = { status };
+      if (status === "blocked") {
+        const reason = window.prompt("Why is this task blocked?", task.blocked_reason || "");
+        if (!reason?.trim()) return toast.error("Blocked tasks need a reason");
+        payload.blocked_reason = reason.trim();
+      }
+      await updateTask.mutateAsync({ id: taskId, payload });
       toast.success("Task updated");
     }
   };
@@ -65,9 +71,10 @@ export default function ProjectDetail() {
         </div>
       </section>
 
-      <section className="grid gap-5 md:grid-cols-3">
+      <section className="grid gap-5 md:grid-cols-4">
         <StatCard label="Progress" value={`${completionPct(tasks)}%`} helper={`${done} of ${tasks.length} tasks complete`} />
-        <StatCard label="Open Tasks" value={tasks.length - done} helper="Todo and in-progress work" />
+        <StatCard label="Open Tasks" value={tasks.length - done} helper="Todo, active, review, or blocked work" />
+        <StatCard label="Blocked" value={tasks.filter((task) => task.status === "blocked").length} helper="Tasks waiting on help" />
         <StatCard label="Members" value={project?.member_ids?.length || 0} helper="Project collaborators" />
       </section>
 

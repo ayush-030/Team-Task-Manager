@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from dependencies import get_current_user, get_project_or_404, get_task_or_404, is_project_member
 from models.comment import Comment
+from models.task import TaskActivity
 from models.user import User
 from schemas.comment import CommentCreate, CommentOut
 
@@ -43,6 +44,8 @@ async def add_comment(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Task access denied")
     comment = Comment(body=payload.body, task_id=task.id, author_id=current_user.id)
     await comment.insert()
+    task.activity.append(TaskActivity(user_id=current_user.id, user_name=current_user.username, action="added a comment"))
+    await task.save()
     return await serialize_comment(comment)
 
 

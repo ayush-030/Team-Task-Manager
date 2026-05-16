@@ -2,11 +2,14 @@ import { DndContext, useDroppable } from "@dnd-kit/core";
 import { motion } from "framer-motion";
 import TaskCard from "./TaskCard.jsx";
 import EmptyState from "./ui/EmptyState.jsx";
+import { statusLabels } from "../utils/formatters.js";
 
 const columns = [
-  ["todo", "To do", "bg-slate-100 text-slate-700"],
-  ["in_progress", "In progress", "bg-amber-50 text-amber-700"],
-  ["done", "Done", "bg-emerald-50 text-emerald-700"],
+  ["todo", statusLabels.todo, "bg-slate-100 text-slate-700"],
+  ["in_progress", statusLabels.in_progress, "bg-amber-50 text-amber-700"],
+  ["review", statusLabels.review, "bg-sky-50 text-sky-700"],
+  ["blocked", statusLabels.blocked, "bg-rose-50 text-rose-700"],
+  ["done", statusLabels.done, "bg-emerald-50 text-emerald-700"],
 ];
 
 function Column({ id, title, tone, tasks }) {
@@ -36,7 +39,7 @@ export default function KanbanBoard({ tasks, onStatusChange }) {
         if (over?.id && active?.id) onStatusChange(active.id, over.id);
       }}
     >
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid gap-4 xl:grid-cols-5">
         {columns.map(([id, title, tone]) => <Column key={id} id={id} title={title} tone={tone} tasks={grouped[id]} />)}
       </div>
     </DndContext>
