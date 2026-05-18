@@ -1,8 +1,36 @@
 # Team Task Manager
 
-Task Flow is a full-stack project management web application inspired by collaborative tools like Trello and Asana. The platform enables users to create projects, manage teams, assign tasks, track progress, and collaborate efficiently using role-based access control.
+TaskFlow is a full-stack project management web application inspired by collaborative tools like Trello and Asana. The platform enables users to create projects, manage teams, assign tasks, track progress, and collaborate efficiently using role-based access control.
 
-## Live Application
+---
+
+# Application Screenshots
+
+## Landing Page
+
+![Landing Page](./assets/landing_page.png)
+
+---
+
+## Member Dashboard
+
+![Member Dashboard](./assets/member_dashboard.png)
+
+---
+
+## Active Projects
+
+![Active Projects](./assets/active_projects.png)
+
+---
+
+## Task Detail View
+
+![Task Detail](./assets/task_detail.png)
+
+---
+
+# Live Application
 
 Frontend:  
 https://team-task-manager-production-ad45.up.railway.app
@@ -10,9 +38,25 @@ https://team-task-manager-production-ad45.up.railway.app
 Backend API Docs:  
 https://team-task-manager-production-ddfe.up.railway.app/docs
 
-## GitHub Repository
+---
 
-https://github.com/ayush-030/Team-Task-Manager
+# Access the Live App
+
+## Admin Portal
+
+Use the demo credentials:
+
+```txt
+Email: admin@example.com
+Password: AdminPass123!
+```
+
+## Member Portal
+
+Create your own account:
+- Click "Sign Up" on the homepage
+- Fill in your details
+- Login with your registered credentials
 
 ---
 
@@ -202,14 +246,3 @@ npm run build
 Start Command:
 npx serve dist -s
 
-# Author
-
-Ayush Rawat
-
-Email: ayushrawat521@gmail.com
-
-LinkedIn:
-https://www.linkedin.com/in/ayushrawat20
-
-GitHub:
-https://github.com/ayush-030
